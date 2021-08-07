@@ -24,6 +24,7 @@ def make_service_head(parse_result: ParseResult) -> str:
     service_head = (
 f"""{HEAD}
 
+import os
 from typing import Optional
 
 from django.views.decorators.csrf import csrf_exempt
@@ -56,6 +57,13 @@ def make_response(
         service_head += ("""
     response["Access-Control-Allow-Origin"] = "*"
     response["Access-Control-Allow-Headers"] = "*" """
+                         )
+    else:
+        service_head += ("""
+    if os.environ.get("MODE", None) == "DEV":
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Headers"] = "*"
+"""
                          )
     service_head += (
 f"""    
