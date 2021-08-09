@@ -15,26 +15,35 @@ def generate_client_methods(parse_result: ParseResult, py_path: str) -> None:
         file.write(MESSAGE_HEAD)
         file.write(
             f"import requests\n"
-            f"from .generated_messages_{server_name}_client import *\n\n"
+            f"import os\n"
+            f"from .generated_messages_{server_name}_client import *\n"
+            f"\n"
+            f"\n"
+            f"def get_address() -> str:\n"
+            f"{TAB}if os.environ.get(\"MODE\", None) == \"PROD\":\n"
+            f"{TAB}{TAB}return \"{parse_result.meta['address_PROD']}\"\n"
+            f"{TAB}else:\n"
+            f"{TAB}{TAB}return \"{parse_result.meta['address_DEV']}\"\n"
+            f"\n"
             f"\n"
         )
         for service in parse_result.services:
             for method in service.methods:
-                if os.environ.get("MODE", None) == "DEV":
-                    address = parse_result.meta['address_DEV']
-                elif os.environ.get("MODE", None) == "PROD":
-                    address = parse_result.meta['address_PROD']
-                else:
-                    address = parse_result.meta.get('address', None)
-
-                if address is None:
-                    raise ValueError(f"can't determine address\nMETA: {parse_result.meta}")
+                # if os.environ.get("MODE", None) == "DEV":
+                #     address = parse_result.meta['address_DEV']
+                # elif os.environ.get("MODE", None) == "PROD":
+                #     address = parse_result.meta['address_PROD']
+                # else:
+                #     address = parse_result.meta.get('address', None)
+                #
+                # if address is None:
+                #     raise ValueError(f"can't determine address\nMETA: {parse_result.meta}")
 
                 file.write(
                     f"def {server_name}_{method.name}({_make_input_type(method.input_type, 'input_msg')}) -> {_make_output_type(method.output_type)}:\n"
                     f"{TAB}{'response = ' if method.output_type != 'Null' else ''}requests.request(\n"
                     f"{TAB}{TAB}method=\"POST\",\n"
-                    f"{TAB}{TAB}url=\"{address}{method.name}\",\n"
+                    f"{TAB}{TAB}url=f\"{{get_address()}}{method.name}\",\n"
                 )
                 if method.input_type != "Null":
                     file.write(f"{TAB}{TAB}json=input_msg.to_json(),\n")
