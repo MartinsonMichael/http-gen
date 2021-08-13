@@ -21,6 +21,7 @@ def generate_impl_file(parse_result: ParseResult, py_path: str) -> None:
 
         with open(imp_path, "w") as file:
             file.write(
+                f"from typing import Any, Dict, Tuple\n\n"
                 f"from .api_services.service_{service.name} import Abstract{service.name}\n"
                 f"from .api_services import generated_messages as msg\n"
                 f"\n\n"

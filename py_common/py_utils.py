@@ -25,6 +25,7 @@ def make_service_head(parse_result: ParseResult) -> str:
 f"""{HEAD}
 
 import os
+import json
 from typing import Optional, Union, Any
 
 from django.views.decorators.csrf import csrf_exempt
