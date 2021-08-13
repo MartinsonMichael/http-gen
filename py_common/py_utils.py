@@ -25,12 +25,12 @@ def make_service_head(parse_result: ParseResult) -> str:
 f"""{HEAD}
 
 import os
-from typing import Optional
+from typing import Optional, Union, Any
 
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, HttpRequest, FileResponse
 
-from .generated_messages import *
+from . import generated_messages as msg
 from .session_auth import get_session_by_token
 
 

@@ -22,7 +22,7 @@ def generate_impl_file(parse_result: ParseResult, py_path: str) -> None:
         with open(imp_path, "w") as file:
             file.write(
                 f"from .api_services.service_{service.name} import Abstract{service.name}\n"
-                f"from .api_services.generated_messages import *\n"
+                f"from .api_services import generated_messages as msg\n"
                 f"\n\n"
                 f"class {service.name}(Abstract{service.name}):\n"
                 f"\n"
@@ -36,14 +36,14 @@ def generate_impl_file(parse_result: ParseResult, py_path: str) -> None:
                 file.write(f"{TAB}def {method.name}(")
                 params = ['self']
                 if method.input_type != "Null":
-                    params.append(f'input_data: {method.input_type}')
+                    params.append(f'input_data: msg.{method.input_type}')
                 if 'InputFiles' in method.changers:
                     params.append('files: Dict[str, bytes]')
                 if is_ses_auth:
                     params.append('session: Any')
                 file.write(", ".join(params))
                 file.write(
-                    f") -> {_make_output_type(method.output_type)}:\n"
+                    f") -> {_make_output_type(method.output_type, use_msg=True)}:\n"
                     f"{TAB}{TAB}raise NotImplemented\n"
                     f"\n"
                 )

@@ -29,7 +29,7 @@ def generate_services(parse_result: ParseResult, service_path: str, pytry: bool)
                         file.write(f"{TAB}{TAB}try:\n")
                         BASE_TAB = f"{TAB}{TAB}{TAB}"
                     file.write(
-                        f"{BASE_TAB}input_data: {method.input_type} = {method.input_type}.from_json(json.loads(request.body))\n"
+                        f"{BASE_TAB}input_data: msg.{method.input_type} = msg.{method.input_type}.from_json(json.loads(request.body))\n"
                     )
                     if pytry:
                         file.write(
@@ -58,7 +58,7 @@ def generate_services(parse_result: ParseResult, service_path: str, pytry: bool)
 
                 file.write(f"{BASE_TAB}")
                 if method.output_type != "Null":
-                    file.write(f"output_data: {method.output_type} = ")
+                    file.write(f"output_data: msg.{method.output_type} = ")
                 elif 'OutputFile' in method.changers:
                     file.write(f"file_path: str = ")
                 file.write(f"self.{method.name}(")
@@ -108,14 +108,14 @@ def generate_services(parse_result: ParseResult, service_path: str, pytry: bool)
                 file.write(f"{TAB}def {method.name}(")
                 params = ['self']
                 if method.input_type != "Null":
-                    params.append(f'input_data: {method.input_type}')
+                    params.append(f'input_data: msg.{method.input_type}')
                 if 'InputFiles' in method.changers:
                     params.append('files: Dict[str, bytes]')
                 if is_ses_auth:
                     params.append('session: Any')
                 file.write(", ".join(params))
                 file.write(
-                    f") -> {_make_output_type(method.output_type, file_output='OutputFile' in method.changers)}:\n"
+                    f") -> {_make_output_type(method.output_type, file_output='OutputFile' in method.changers, use_msg=True)}:\n"
                     f"{TAB}{TAB}raise NotImplemented\n"
                     f"\n"
                 )
