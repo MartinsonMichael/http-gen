@@ -55,14 +55,15 @@ def _write_method_to_file(
     file.write(
         f"export const {method.name} = ("
     )
+
+    input_params = []
     if method.input_type != "Null":
         msg: Message = find_message_by_name(parse_result, method.input_type)
         for i, atr in enumerate(msg.attributes):
-            file.write(_make_atr_with_type(atr, use_msg=True))
-            if i + 1 < len(msg.attributes):
-                file.write(", ")
+            input_params.append(_make_atr_with_type(atr, use_msg=True))
     if 'InputFiles' in method.changers:
-        file.write('files: FormData')
+        input_params.append('files: FormData')
+    file.write(", ".join(input_params))
 
     file.write(
         f") => {{\n"
@@ -70,16 +71,30 @@ def _write_method_to_file(
         f"{TAB}{TAB}dispatch({{type: {method.name}_START, payload: undefined}});\n"
         f"\n"
     )
+
+    # add  data into multi-form in case of files
+    if 'InputFiles' in method.changers and method.input_type != "Null":
+        file.write(
+            f"{TAB}{TAB}files.append(\"non_file_json_data\", JSON.stringify({{\n"
+        )
+        msg: Message = find_message_by_name(parse_result, method.input_type)
+        for atr in msg.attributes:
+            file.write(f"{TAB}{TAB}{TAB}'{atr.atr_name}': {atr.atr_name},\n")
+        file.write(
+            f"{TAB}{TAB}}}));\n\n"
+        )
+
     file.write(
         f"{TAB}{TAB}await {axiosInstance}.post(\n"
         f"{TAB}{TAB}{TAB}'{method.name}',\n"
     )
     if method.input_type != "Null":
-        msg: Message = find_message_by_name(parse_result, method.input_type)
-        file.write(f"{TAB}{TAB}{TAB}{{\n")
-        for atr in msg.attributes:
-            file.write(f"{TAB}{TAB}{TAB}{TAB}'{atr.atr_name}': {atr.atr_name},\n")
-        file.write(f"{TAB}{TAB}{TAB}}},\n")
+        if 'InputFiles' not in method.changers:
+            msg: Message = find_message_by_name(parse_result, method.input_type)
+            file.write(f"{TAB}{TAB}{TAB}{{\n")
+            for atr in msg.attributes:
+                file.write(f"{TAB}{TAB}{TAB}{TAB}'{atr.atr_name}': {atr.atr_name},\n")
+            file.write(f"{TAB}{TAB}{TAB}}},\n")
 
     if 'InputFiles' in method.changers:
         file.write(

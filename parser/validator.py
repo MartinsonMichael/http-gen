@@ -39,8 +39,8 @@ def validate_parsed_data(parsed_results: ParseResult) -> None:
                     f"service {service.name} contain method {method.name} with unknown output type {method.input_type}"
                 )
 
-            if 'InputFiles' in method.changers and method.input_type != "Null":
-                raise ValueError("you can use only one of: 'Input message', 'InputFile'")
+            # if 'InputFiles' in method.changers and method.input_type != "Null":
+            #     raise ValueError("you can use only one of: 'Input message', 'InputFile'")
 
             if 'OutputFile' in method.changers and method.output_type != "Null":
                 raise ValueError("you can use only one of: 'Output message', 'OutputFile'")

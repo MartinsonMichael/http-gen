@@ -28,15 +28,32 @@ def generate_services(parse_result: ParseResult, service_path: str, pytry: bool)
                     if pytry:
                         file.write(f"{TAB}{TAB}try:\n")
                         BASE_TAB = f"{TAB}{TAB}{TAB}"
-                    file.write(
-                        f"{BASE_TAB}input_data: msg.{method.input_type} = msg.{method.input_type}.from_json(json.loads(request.body))\n"
-                    )
+                    if 'InputFiles' in method.changers:
+                        file.write(
+                            f"{BASE_TAB}input_data = None\n"
+                            f"{BASE_TAB}assert \"multipart/form-data; boundary=\" in request.headers['Content-Type']\n"
+                            f"{BASE_TAB}boundary = request.headers['Content-Type'].split(\"boundary=\")[1].encode('utf-8')\n"
+                            f"{BASE_TAB}start = b'\\r\\nContent-Disposition: form-data; name=\"non_file_json_data\"\\r\\n\\r\\n'\n"
+                            f"{BASE_TAB}for part in request.body.split(boundary):\n"
+                            f"{BASE_TAB}{TAB}if start in part:\n"
+                            f"{BASE_TAB}{TAB}{TAB}data_part = part[len(start):-4].decode('utf-8')\n"
+                            f"{BASE_TAB}{TAB}{TAB}input_data: msg.{method.input_type} = msg.{method.input_type}.from_json(json.loads(data_part))\n"
+                            f"\n"
+                            f"{BASE_TAB}if input_data is None:\n"
+                            f"{BASE_TAB}{TAB}raise ValueError(\"Can't find form data\")\n"
+                        )
+                    else:
+                        file.write(
+                            f"{BASE_TAB}input_data: msg.{method.input_type} = msg.{method.input_type}.from_json(json.loads(request.body))\n"
+                        )
                     if pytry:
                         file.write(
                             f"{TAB}{TAB}except Exception as e:\n"
                             f'{TAB}{TAB}{TAB}return make_response(f"error while parsing request:\\n{{str(e)}}", 400)\n'
                             f"\n"
                         )
+                    else:
+                        file.write("\n")
 
                 # changers
                 is_ses_auth = 'Session-auth' in method.changers

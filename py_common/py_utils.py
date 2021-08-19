@@ -13,7 +13,7 @@ HEAD = f"""# This file is generated, DO NOT EDIT IT
 
 MESSAGE_HEAD = f"""{HEAD}
 
-from typing import List, Dict, Union, Any, Optional
+from typing import List, Dict, Union, Any, Optional, Dict
 import json
 
 
@@ -26,7 +26,7 @@ f"""{HEAD}
 
 import os
 import json
-from typing import Optional, Union, Any
+from typing import Optional, Union, Any, Dict
 
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, HttpRequest, FileResponse
