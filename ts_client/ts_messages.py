@@ -53,7 +53,7 @@ def generate_messages(parse_result: ParseResult, ts_path: str) -> None:
 
                     file.write(f"{TAB}{TAB}{atr.atr_name}: ")
                     if 'Optional' in atr.changers:
-                        file.write(f"(Object.keys(x).include('{atr.atr_name}') ? ")
+                        file.write(f"(x['{atr.atr_name}'] !== null ? ")
 
                     if atr.is_map:
                         raise ValueError("impossible situation for case")
