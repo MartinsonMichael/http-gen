@@ -104,7 +104,7 @@ def generate_messages(parse_result: ParseResult, ts_path: str) -> None:
 
                     file.write(
                         f"{BASE_TAB}Object.keys(x['{atr.atr_name}']).forEach(\n"
-                        f"{BASE_TAB}{TAB}(obj_key: {atr.map_key_type}) => obj.{atr.atr_name}[obj_key] = "
+                        f"{BASE_TAB}{TAB}(obj_key: {_base_type_to_ts_types(atr.map_key_type)}) => obj.{atr.atr_name}[obj_key] = "
                     )
                     if is_base_type(atr.map_value_type):
                         file.write(f"x['{atr.atr_name}'][obj_key]\n")
