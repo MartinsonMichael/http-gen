@@ -9,7 +9,7 @@ logger = logging.Logger(__name__)
 TAB = "    "
 HEAD = f"""# This file is generated, DO NOT EDIT IT
 # Michael Martinson http generator (c)
-# Date: {datetime.now()}"""
+#"""
 
 MESSAGE_HEAD = f"""{HEAD}
 
