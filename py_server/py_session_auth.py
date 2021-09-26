@@ -18,9 +18,14 @@ def generate_session_auth(parse_result: ParseResult, session_auth_path: str) -> 
     with open(session_auth_path, "w") as file:
         file.write(
             f"from typing import Union, Any\n"
+            f"from django.http import HttpRequest\n"
             f"\n"
             f"\n"
-            f"def get_session_by_token(token: str) -> Union[Any, None]:\n"
+            f"def get_session_by_token(\n"
+            f"{TAB}token: str,\n"
+            f"{TAB}request: HttpRequest,"
+            f"{TAB}permission: Optional[List[str]] = None\n"
+            f") -> Union[Any, None]:\n"
             f'{TAB}"""\n'
             f'{TAB}This function should find session by given token\n'
             f'{TAB}Returns: session object (Any) if session exist, otherwise None\n'

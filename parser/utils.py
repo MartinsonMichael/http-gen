@@ -9,11 +9,11 @@ POSSIBLE_CHANGERS = [
     'Generate-once-ts', 'Session-auth',
     'InputFiles', 'OutputFile',
     'Optional',
+    'Permission'
 ]
 
 
 def _comment_remover(s: str) -> str:
-    print(s == "")
     if s == "":
         return ""
     if '//' not in s:

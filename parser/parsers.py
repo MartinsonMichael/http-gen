@@ -6,6 +6,7 @@ import re
 from parser.parser_types import *
 from parser.utils import (
     POSSIBLE_CHANGERS,
+    _comment_remover,
 )
 from parser.validator import post_process_parsed_results
 
@@ -45,6 +46,7 @@ def parse_file(proto_file_path: str) -> ParseResult:
     service: Service = Service()
 
     changers: List[str] = []
+    changers_obj: Dict[str, object] = dict()
 
     for line in open(proto_file_path).readlines():
         if re.match(r"\s*\n", line) is not None:
@@ -53,18 +55,24 @@ def parse_file(proto_file_path: str) -> ParseResult:
         if re.match(r"\s*//.*\n", line) is not None:
             continue
 
-        if re.match(rf"\s*@[\w|-]+\s*\n", line) is not None:
-            m = re.match(rf"\s*@(?P<changer>{'|'.join(POSSIBLE_CHANGERS)})\s*\n", line)
+        line = _comment_remover(line)
+
+        m = re.match(rf"\s*@(?P<changer>{'|'.join(POSSIBLE_CHANGERS)})(?P<args>\([\w|-|,|\"|\'|\d|\s]+\))?\s*\n", line)
+        if m is not None:
+            # m = re.match(rf"\s*@(?P<changer>{'|'.join(POSSIBLE_CHANGERS)})\s*\n", line)
             if m is None:
                 logger.log(35, f"unknown changer in line:\n|{line}|")
                 raise ValueError(f"unknown changer in line:\n|{line}|")
             changers.append(m.group('changer'))
+            if m.group('args') is not None:
+                changers_obj[m.group('changer')] = m.group('args')[2:-2]
             continue
 
         if state == "none":
             if line.startswith("message"):
-                msg = Message(changers)
+                msg = Message(changers, changers_obj)
                 changers: List[str] = []
+                changers_obj: Dict[str, str] = {}
                 m = re.match(r"message\s+(?P<name>\w+)\s+{", line)
                 msg.name = m.group('name')
                 state = "msg"
@@ -73,7 +81,8 @@ def parse_file(proto_file_path: str) -> ParseResult:
 
             if line.startswith("service"):
                 m = re.match(r"service\s+(?P<name>\w+)\s+{", line)
-                service = Service(changers)
+                service = Service(changers, changers_obj)
+                changers_obj: Dict[str, str] = {}
                 changers: List[str] = []
                 service.name = m.group('name')
                 state = "service"
@@ -102,9 +111,11 @@ def parse_file(proto_file_path: str) -> ParseResult:
                         atr_type=m.group('type'),
                         repeated=m.group('repeated') == 'repeated',
                         changers=changers,
+                        changer_obj=changers_obj,
                     )
                 )
                 changers: List[str] = []
+                changers_obj: Dict[str, str] = {}
             elif m_map is not None:
                 msg.attributes.append(
                     MessageAttribute(
@@ -113,9 +124,11 @@ def parse_file(proto_file_path: str) -> ParseResult:
                         map_key_type=m_map.group('map_key_type'),
                         map_value_type=m_map.group('map_value_type'),
                         changers=changers,
+                        changer_obj=changers_obj,
                     )
                 )
                 changers: List[str] = []
+                changers_obj: Dict[str, str] = {}
             else:
                 logger.log(35, f"unexpected message None match in line:\n|{line}|")
 
@@ -137,9 +150,11 @@ def parse_file(proto_file_path: str) -> ParseResult:
                         input_type=m.group('input'),
                         output_type=m.group('output'),
                         changers=changers,
+                        changer_obj=changers_obj,
                     )
                 )
                 logger.log(35, f"add changers: '{', '.join(changers)}' to method {m.group('name')}")
+                changers_obj: Dict[str, str] = {}
                 changers: List[str] = []
             else:
                 logger.log(35, f"unexpected service None match in line:\n|{line}|")

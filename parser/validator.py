@@ -10,6 +10,11 @@ def post_process_parsed_results(parsed_results: ParseResult) -> None:
             for method in service.methods:
                 method.changers.append('Session-auth')
 
+        if 'Permission' in service.changers:
+            for method in service.methods:
+                method.changers.append('Permission')
+                method.changer_obj['Permission'] = service.changer_obj['Permission']
+
 
 def validate_parsed_data(parsed_results: ParseResult) -> None:
     msg_names = [msg.name for msg in parsed_results.messages]

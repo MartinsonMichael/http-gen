@@ -11,8 +11,11 @@ class MessageAttribute:
             map_key_type: Optional[str] = None,
             map_value_type: Optional[str] = None,
             changers: List[str] = [],
+            changer_obj: Dict[str, str] = {}
     ):
         self.changers = changers
+        self.changer_obj: Dict[str, str] = changer_obj
+
         self.atr_name = atr_name
         self.atr_type = atr_type
         self.repeated = repeated
@@ -26,8 +29,9 @@ class MessageAttribute:
 
 
 class Message:
-    def __init__(self, changers: List[str] = []):
-        self.changers = changers
+    def __init__(self, changers: List[str] = [], changer_obj: Dict[str, str] = {}):
+        self.changers: List[str] = changers
+        self.changer_obj: Dict[str, str] = changer_obj
         self.name: str = ""
         self.attributes: List[MessageAttribute] = []
 
@@ -39,19 +43,28 @@ class Message:
 
 
 class ServiceMethod:
-    def __init__(self, name: str, input_type: str, output_type: str, changers: List[str] = []):
-        self.changers = changers
-        self.name = name
-        self.input_type = input_type
-        self.output_type = output_type
+    def __init__(
+            self,
+            name: str,
+            input_type: str,
+            output_type: str,
+            changers: List[str] = [],
+            changer_obj: Dict[str, str] = {},
+    ):
+        self.changers: List[str] = changers
+        self.changer_obj: Dict[str, str] = changer_obj
+        self.name: str = name
+        self.input_type: str = input_type
+        self.output_type: str = output_type
 
     def __str__(self):
         return f"{self.name}: {self.input_type} -> {self.output_type}"
 
 
 class Service:
-    def __init__(self, changers: List[str] = []):
+    def __init__(self, changers: List[str] = [], changer_obj: Dict[str, str] = {}):
         self.changers: List[str] = changers
+        self.changer_obj: Dict[str, str] = changer_obj
         self.name: str = ""
         self.methods: List[ServiceMethod] = []
 

@@ -23,6 +23,26 @@ def generate_services(parse_result: ParseResult, service_path: str, pytry: bool)
                     f"{TAB}{TAB}{TAB}return make_response()\n"
                     f"\n"
                 )
+
+                # changers
+                is_ses_auth = 'Session-auth' in method.changers
+                if is_ses_auth:
+                    file.write(
+                        f"{TAB}{TAB}token = request.headers.get('token', '')\n"
+                        f"{TAB}{TAB}if token in '':\n"
+                        f"{TAB}{TAB}{TAB}token = request.COOKIES.get('token', '')\n"
+                    )
+                    if 'Permission' in method.changers:
+                        file.write(f"{TAB}{TAB}permissions = [\"{method.changer_obj['Permission']}\"]\n")
+                    else:
+                        file.write(f"{TAB}{TAB}permissions = None\n")
+                    file.write(
+                        f"{TAB}{TAB}session = get_session_by_token(token, request, permissions)\n"
+                        f"{TAB}{TAB}if session is None:\n"
+                        f"{TAB}{TAB}{TAB}return make_response(f'Unauthorized', 401)\n"
+                        f"\n"
+                    )
+
                 if method.input_type != "Null":
                     BASE_TAB = f"{TAB}{TAB}"
                     if pytry:
@@ -54,19 +74,6 @@ def generate_services(parse_result: ParseResult, service_path: str, pytry: bool)
                         )
                     else:
                         file.write("\n")
-
-                # changers
-                is_ses_auth = 'Session-auth' in method.changers
-                if is_ses_auth:
-                    file.write(
-                        f"{TAB}{TAB}token = request.headers.get('token', '')\n"
-                        f"{TAB}{TAB}if token in '':\n"
-                        f"{TAB}{TAB}{TAB}token = request.COOKIES.get('token', '')\n"
-                        f"{TAB}{TAB}session = get_session_by_token(token)\n"
-                        f"{TAB}{TAB}if session is None:\n"
-                        f"{TAB}{TAB}{TAB}return make_response(f'Unauthorized', 401)\n"
-                        f"\n"
-                    )
 
                 BASE_TAB = f"{TAB}{TAB}"
                 if pytry:
