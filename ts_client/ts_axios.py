@@ -14,7 +14,8 @@ def generate_axios_client(parse_result: ParseResult, ts_path: str) -> None:
         get_file_names(parse_result.meta.get('micro_service_name', None))
     )
 
-    base_api_address = parse_result.meta['address']
+    # base_api_address = parse_result.meta['address']
+    base_api_address = ""
     base_address = base_api_address.split("api")[0]
 
     with open(os.path.join(ts_path, f"{client_file_name}.ts"), "w") as file:
