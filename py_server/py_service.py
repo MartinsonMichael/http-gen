@@ -134,7 +134,7 @@ def generate_services(parse_result: ParseResult, service_path: str, pytry: bool)
                 if method.input_type != "Null":
                     params.append(f'input_data: msg.{method.input_type}')
                 if 'InputFiles' in method.changers:
-                    params.append('files: Dict[str, bytes]')
+                    params.append('files: Type[QueryDict]')
                 if is_ses_auth:
                     params.append('session: Any')
                 file.write(", ".join(params))
