@@ -26,10 +26,11 @@ f"""{HEAD}
 
 import os
 import json
-from typing import Optional, Union, Any, Dict, Type
+from typing import Optional, Union, Any, Dict
 
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse, HttpRequest, FileResponse, QueryDict
+from django.http import HttpResponse, HttpRequest, FileResponse
+from django.core.files.uploadedfile import UploadedFile
 
 from . import generated_messages as msg
 from .session_auth import get_session_by_token
