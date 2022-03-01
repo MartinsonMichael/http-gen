@@ -63,6 +63,7 @@ def _write_method_to_file(
             input_params.append(_make_atr_with_type(atr, use_msg=True))
     if 'InputFiles' in method.changers:
         input_params.append('files: FormData')
+    input_params = sorted(input_params, key=lambda x: 0 if '?' not in x else 1)
     file.write(", ".join(input_params))
 
     file.write(
