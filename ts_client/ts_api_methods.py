@@ -114,14 +114,15 @@ def _write_method_to_file(
     # then
     file.write(
         f".then(\n"
-        f"{TAB}{TAB}{TAB}response => {{\n"
+        f"{TAB}{TAB}{TAB}(response: AxiosResponse<msg.{method.output_type}, any>) => {{\n"
         f'{TAB}{TAB}{TAB}{TAB}if (!Object.keys(response.headers).includes("error")) {{\n'
         f"{TAB}{TAB}{TAB}{TAB}{TAB}dispatch({{type: {method.name}_SUCCESS, payload: "
     )
     if method.output_type == "Null":
         file.write(f"undefined}});\n")
-    elif is_base_type(method.output_type):
-        file.write(f"response.data}});\n")
+    # NOTE commented, because not axios data already have proper type
+    # elif is_base_type(method.output_type):
+    #     file.write(f"response.data}});\n")
     else:
         file.write(f"msg.construct_{method.output_type}(response.data)}});\n")
     file.write(
@@ -135,8 +136,8 @@ def _write_method_to_file(
     # catch
     file.write(
         f".catch(\n"
-        f"{TAB}{TAB}{TAB}error => {{\n"
-        f'{TAB}{TAB}{TAB}{TAB}dispatch({{type: {method.name}_REJECTED, payload: "Server side error"}});\n'
+        f"{TAB}{TAB}{TAB}(error: any) => {{\n"
+        f'{TAB}{TAB}{TAB}{TAB}dispatch({{type: {method.name}_REJECTED, payload: error.toString()}});\n'
         # f'{TAB}{TAB}{TAB}{TAB}dispatch(addErrorToQueue("Server side error"));\n'
         f"{TAB}{TAB}{TAB}}}\n"
         f"{TAB}{TAB});\n"
@@ -170,6 +171,7 @@ def generate_methods(parse_result: ParseResult, ts_path: str) -> None:
             f"{HEAD}\n\n"
             f'import {{ {axiosInstance} }} from "../{client_file_name}"\n'
             f'import * as msg from "../{messages_file_name}"\n'
+            f'import {{ AxiosResponse }} from "axios";\n'
             # f'import {{ addErrorToQueue }} from "../notificationService/notificationService_actions";\n'
             f'\n\n'
         )

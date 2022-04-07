@@ -115,8 +115,14 @@ def _simple_flask_generate(parse_result: ParseResult, py_path: str) -> List[str]
 
     for service in parse_result.services:
         for method in service.methods:
+
+            if 'FLASK-do-not-generate' in method.changers:
+                logger.info(f"ignore implementation for  {method.name} due to 'FLASK-do-not-generate' flag")
+                continue
+
             lines.append(f"from {PYPATH_PREFIX}.api_{method.name} import {method.name}")
             method_file_path = os.path.join(folder_path, f'api_{method.name}.py')
+
             if os.path.exists(method_file_path):
                 logger.info(f"file for method {method.name} already exists")
                 continue
@@ -173,10 +179,14 @@ def _simple_flask_generate(parse_result: ParseResult, py_path: str) -> List[str]
     for service in parse_result.services:
         for method in service.methods:
 
+            if 'FLASK-do-not-generate' in method.changers:
+                logger.info(f"ignore generated part for for  {method.name} due to 'FLASK-do-not-generate' flag")
+                continue
+
             if 'OutputFile' in method.changers:
                 raise ValueError("'OutputFile' changer currently not implemented for flask, call @MichaelMD")
 
-            lines.append(f"@app.post('/api/{method.name}/')")
+            lines.append(f"@app.post('/api/{method.name}')")
 
             impl_call_params = []
             if method.input_type != 'Null':

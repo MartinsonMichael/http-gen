@@ -14,7 +14,7 @@ from parser import (
 TAB = "    "
 HEAD = f"""// This file is generated, DO NOT EDIT IT
 // Michael Martinson http generator (c)
-// Date: {datetime.now()}"""
+"""
 
 
 logger = logging.Logger(__name__)
