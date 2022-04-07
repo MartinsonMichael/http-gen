@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from utils import ParseResult, MessageAttribute, is_base_type, Service
+from parser.utils import MessageAttribute, is_base_type, Service
 
 logger = logging.Logger(__name__)
 

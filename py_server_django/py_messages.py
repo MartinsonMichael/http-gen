@@ -3,7 +3,7 @@ from parser import (
     is_base_type
 )
 
-from py_server.py_utils import (
+from py_server_django.py_utils import (
     MESSAGE_HEAD,
     TAB,
     _make_attribute_declaration,
