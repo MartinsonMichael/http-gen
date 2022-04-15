@@ -10,6 +10,10 @@ def post_process_parsed_results(parsed_results: ParseResult) -> None:
             for method in service.methods:
                 method.changers.append('Session-auth')
 
+        if 'FLASK-do-not-generate' in service.changers:
+            for method in service.methods:
+                method.changers.append('FLASK-do-not-generate')
+
         if 'Permission' in service.changers:
             for method in service.methods:
                 method.changers.append('Permission')
