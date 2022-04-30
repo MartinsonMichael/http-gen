@@ -215,7 +215,7 @@ def _simple_flask_generate(parse_result: ParseResult, py_path: str) -> List[str]
 
             lines.extend([
                 f"{TAB}output_data, code = {method.name}({', '.join(impl_call_params)})",
-                f"{TAB}if code < 200 or 299 < code",
+                f"{TAB}if code < 200 or 299 < code:",
                 f"{TAB}{TAB}return output_data, code",
             ])
 
