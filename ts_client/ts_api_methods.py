@@ -103,12 +103,12 @@ def _write_method_to_file(
         )
 
     file.write(
-        f"{TAB}{TAB}{TAB}{{\n"
-        f"{TAB}{TAB}{TAB}{TAB}'headers': {{\n"
-        f"{TAB}{TAB}{TAB}{TAB}{TAB}'Access-Control-Allow-Origin': '*',\n"
-        f"{TAB}{TAB}{TAB}{TAB}{TAB}'Access-Control-Allow-Headers': '*',\n"
-        f"{TAB}{TAB}{TAB}{TAB}}},\n"
-        f"{TAB}{TAB}{TAB}}},\n"
+        # f"{TAB}{TAB}{TAB}{{\n"
+        # f"{TAB}{TAB}{TAB}{TAB}'headers': {{\n"
+        # f"{TAB}{TAB}{TAB}{TAB}{TAB}'Access-Control-Allow-Origin': '*',\n"
+        # f"{TAB}{TAB}{TAB}{TAB}{TAB}'Access-Control-Allow-Headers': '*',\n"
+        # f"{TAB}{TAB}{TAB}{TAB}}},\n"
+        # f"{TAB}{TAB}{TAB}}},\n"
         f"{TAB}{TAB})"
     )
     # then
