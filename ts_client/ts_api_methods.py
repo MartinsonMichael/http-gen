@@ -114,7 +114,7 @@ def _write_method_to_file(
     # then
     file.write(
         f".then(\n"
-        f"{TAB}{TAB}{TAB}(response: AxiosResponse<msg.{method.output_type}, any>) => {{\n"
+        f"{TAB}{TAB}{TAB}(response: AxiosResponse<{'msg.' + method.output_type if method.output_type != 'Null' else 'undefined'}, any>) => {{\n"
         f'{TAB}{TAB}{TAB}{TAB}if (!Object.keys(response.headers).includes("error")) {{\n'
         f"{TAB}{TAB}{TAB}{TAB}{TAB}dispatch({{type: {method.name}_SUCCESS, payload: "
     )

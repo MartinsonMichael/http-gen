@@ -28,8 +28,6 @@ def generate_messages(parse_result: ParseResult, ts_path: str) -> None:
             f"{HEAD}\n\n"
         )
 
-        file.write("export const Null = undefined;\n\n")
-
         for msg in parse_result.messages:
             file.write(
                 f"export interface {msg.name} {{\n"
