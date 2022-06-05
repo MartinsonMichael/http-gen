@@ -7,6 +7,7 @@ from parser import ParseResult
 from py_server_django.py_django_urls import generate_urls
 from py_server_django.py_implementation import generate_impl_file
 from py_common.py_messages import generate_messages
+from py_server_django.py_message_mapper import generate_url2msg_mapping
 from py_server_django.py_service import generate_services
 from py_server_django.py_session_auth import generate_session_auth
 
@@ -24,9 +25,10 @@ def py_gen_server_django(parse_result: ParseResult, py_path: str, pytry: bool = 
 
     generate_messages(parse_result, os.path.join(gen_py_path, "generated_messages.py"))
     generate_services(parse_result, gen_py_path, pytry)
+    generate_url2msg_mapping(parse_result, gen_py_path)
 
     generate_impl_file(parse_result, py_path)
     generate_urls(parse_result, os.path.join(py_path, "api_urls.py"))
 
-    generate_session_auth(parse_result, os.path.join(gen_py_path, 'session_auth.py'))
+    # generate_session_auth(parse_result, os.path.join(gen_py_path, 'session_auth.py'))
     logger.log(35, "py Server generation... DONE")

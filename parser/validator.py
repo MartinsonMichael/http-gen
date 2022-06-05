@@ -14,10 +14,9 @@ def post_process_parsed_results(parsed_results: ParseResult) -> None:
             for method in service.methods:
                 method.changers.append('FLASK-do-not-generate')
 
-        if 'Permission' in service.changers:
+        if 'Admin-auth' in service.changers:
             for method in service.methods:
-                method.changers.append('Permission')
-                method.changer_obj['Permission'] = service.changer_obj['Permission']
+                method.changers.append('Admin-auth')
 
 
 def validate_parsed_data(parsed_results: ParseResult) -> None:

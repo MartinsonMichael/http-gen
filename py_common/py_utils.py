@@ -9,7 +9,7 @@ logger = logging.Logger(__name__)
 TAB = "    "
 HEAD = f"""# This file is generated, DO NOT EDIT IT
 # Michael Martinson http generator (c)
-#"""
+"""
 
 MESSAGE_HEAD = f"""{HEAD}
 
@@ -24,59 +24,57 @@ def make_service_head(parse_result: ParseResult) -> str:
     service_head = (
 f"""{HEAD}
 
-import os
-import json
-from typing import Optional, Union, Any, Dict
-
-from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse, HttpRequest, FileResponse
-from django.core.files.uploadedfile import UploadedFile
+from django.http import HttpRequest
 
 from . import generated_messages as msg
-from .session_auth import get_session_by_token
-
-
-def _make_message_response(content: str = "") -> HttpResponse:
-    return HttpResponse(content=content)
-
-
-def _make_file_response(file_path) -> FileResponse:
-    return FileResponse(open(file_path, 'rb'))
-
-
-def make_response(
-        content: str = "", 
-        status: int = 200, 
-        file_path: Optional[str] = None
-    ) -> Union[HttpResponse, FileResponse]:
-    if file_path is not None:
-        response = _make_file_response(file_path)
-    else:
-        response = _make_message_response(content)
-    response.status = 200"""
-    )
-    if parse_result.meta.get("add_access_headers", None):
-        service_head += ("""
-    response["Access-Control-Allow-Origin"] = "*"
-    response["Access-Control-Allow-Headers"] = "*" """
-                         )
-    else:
-        service_head += ("""
-    if os.environ.get("MODE", None) == "DEV":
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Headers"] = "*"
-"""
-                         )
-    service_head += (
-f"""    
-    if status != 200:
-        response["error"] = status
-        response["Access-Control-Expose-Headers"] = "error"
-    return response
+from middleware.AuthMiddleware import AuthUserInfo
+from middleware.MessageMiddleware import RPCException
 
 
 """
     )
+#
+# def _make_message_response(content: str = "") -> HttpResponse:
+#     return HttpResponse(content=content)
+#
+#
+# def _make_file_response(file_path) -> FileResponse:
+#     return FileResponse(open(file_path, 'rb'))
+#
+#
+# def make_response(
+#         content: str = "",
+#         status: int = 200,
+#         file_path: Optional[str] = None
+#     ) -> Union[HttpResponse, FileResponse]:
+#     if file_path is not None:
+#         response = _make_file_response(file_path)
+#     else:
+#         response = _make_message_response(content)
+#     response.status = 200"""
+#     )
+#     if parse_result.meta.get("add_access_headers", None):
+#         service_head += ("""
+#     response["Access-Control-Allow-Origin"] = "*"
+#     response["Access-Control-Allow-Headers"] = "*" """
+#                          )
+#     else:
+#         service_head += ("""
+#     if os.environ.get("MODE", None) == "DEV":
+#         response["Access-Control-Allow-Origin"] = "*"
+#         response["Access-Control-Allow-Headers"] = "*"
+# """
+#                          )
+#     service_head += (
+# f"""
+#     if status != 200:
+#         response["error"] = status
+#         response["Access-Control-Expose-Headers"] = "error"
+#     return response
+
+
+# """
+#     )
     return service_head
 
 

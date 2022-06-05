@@ -27,7 +27,7 @@ def generate_urls(parse_result: ParseResult, urls_path: str) -> None:
         for service in parse_result.services:
             file.write(f"{TAB}# urls for {service.name}\n")
             for method in service.methods:
-                file.write(f"{TAB}path('{method.name}', service_{service.name}.service_{method.name}),\n")
+                file.write(f"{TAB}path('{method.name}', service_{service.name}.{method.name}),\n")
             file.write(f"\n")
 
         file.write(f"]\n")

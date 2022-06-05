@@ -7,10 +7,9 @@ logger = logging.Logger(__name__)
 
 POSSIBLE_CHANGERS = [
     'Generate-once-ts', 'FLASK-do-not-generate',
-    'Session-auth',
+    'Session-auth', 'Admin-auth'
     'InputFiles', 'OutputFile',
     'Optional',
-    'Permission'
 ]
 
 
