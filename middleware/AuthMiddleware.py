@@ -10,8 +10,10 @@ from sqlalchemy.engine import LegacyCursorResult
 from sqlalchemy.sql.functions import now
 
 from db.utils import Engine
-from db.tables import SessionDB
+from db.tables import SessionDB, UserDB
 from redis_cache.utils import redis_client
+
+from kb.api_services.url2map import URL_TO_MSG_MAPPING
 
 
 _jwt_key = open(os.environ['JWT_KEY_PATH'], "rb").read()
@@ -48,12 +50,18 @@ class AuthMiddleware:
 
             try:
                 user_info.user_id = int(payload.get('user_id', None))
+                user_info.is_admin = AuthMiddleware.is_admin(user_info.user_id)
             except TypeError:
                 return HttpResponse(status=401, content="access_token invalid")
 
-            secret = payload.get('secret', None)
-            if redis_client.get(secret) is not None:
+            if redis_client.get("rejected:" + access_token) is not None:
                 return HttpResponse(status=401, content="access_token rejected")
+
+            if request.path in URL_TO_MSG_MAPPING.keys():
+                if URL_TO_MSG_MAPPING[request.path]['access_control'] == 'admin' and not user_info.is_admin:
+                    return HttpResponse(status=401, content="need admin access")
+            else:
+                return HttpResponse(status=401, content="api method not found, access dined")
 
         elif refresh_token is not None:
             try:
@@ -87,12 +95,37 @@ class AuthMiddleware:
             ))
 
         else:
-            # TODO check here that such method could be invoked without permissions
-            return HttpResponse(status=401, content="no token")
+
+            if request.path in URL_TO_MSG_MAPPING.keys():
+                if URL_TO_MSG_MAPPING[request.path]['access_control'] is not None:
+                    return HttpResponse(status=401, content="no token")
+            else:
+                return HttpResponse(status=401, content="api method not found, access dined")
 
         request.user = user_info
 
         return self._get_response(request)
+
+    @staticmethod
+    def is_admin(user_id: int) -> bool:
+        """
+        :param user_id: int - user if
+        :return: bool - True if this user is app admin
+        """
+        redis_key = "is_admin:" + str(user_id)
+        is_admin: Optional[bytes] = redis_client.get(redis_key)
+        if is_admin is not None:
+            try:
+                return bool(is_admin.decode())
+            except (TypeError, UnicodeDecodeError):
+                pass
+        result: LegacyCursorResult = Engine.execute(select(UserDB.c.is_admin).where(UserDB.c.user_id == user_id))
+        if result.rowcount == 0:
+            redis_client.set(redis_key, 0)
+            return False
+        is_admin: bool = result.first()[0]
+        redis_client.set(redis_key, int(is_admin))
+        return is_admin
 
     @staticmethod
     def REFRESH_TOKEN_LIFETIME() -> timedelta:
@@ -139,7 +172,7 @@ class AuthMiddleware:
         access_token = jwt.encode({'user_id': user_id, 'exp': valid_till_dttm}, key=_jwt_key)
 
         # to access access_token by refresh
-        redis_client.set(refresh_token, access_token)
+        redis_client.set("access_token:" + refresh_token, access_token)
 
         return access_token
 
@@ -159,8 +192,8 @@ class AuthMiddleware:
             return
         refresh_token = result.first()[0]
 
-        access_token: Optional[bytes] = redis_client.get(refresh_token)
+        access_token: Optional[bytes] = redis_client.get("access_token:" + refresh_token)
         if access_token is not None:
-            redis_client.set(access_token.decode(), "0")
+            redis_client.set("rejected:" + access_token.decode(), "1")
 
         Engine.execute(delete(SessionDB).where(SessionDB.s.session_id == session_id))
