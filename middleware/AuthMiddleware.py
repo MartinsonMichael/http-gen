@@ -13,7 +13,7 @@ from db.utils import Engine
 from db.tables import SessionDB, UserDB
 from redis_cache.utils import redis_client
 
-from kb.api_services.url2map import URL_TO_MSG_MAPPING
+from webapi.methods.api_services.url2map import URL_TO_MSG_MAPPING
 
 
 _jwt_key = open(os.environ['JWT_KEY_PATH'], "rb").read()
@@ -40,6 +40,8 @@ class AuthMiddleware:
         user_info.access_token = access_token
         user_info.refresh_token = refresh_token
 
+        api_method_name = request.path.split('/')[-1] if '/' in request.path else request.path
+
         if access_token is not None:
             try:
                 payload = jwt.decode(access_token, key=_jwt_key, algorithms='HS256')
@@ -57,8 +59,8 @@ class AuthMiddleware:
             if redis_client.get("rejected:" + access_token) is not None:
                 return HttpResponse(status=401, content="access_token rejected")
 
-            if request.path in URL_TO_MSG_MAPPING.keys():
-                if URL_TO_MSG_MAPPING[request.path]['access_control'] == 'admin' and not user_info.is_admin:
+            if api_method_name in URL_TO_MSG_MAPPING.keys():
+                if URL_TO_MSG_MAPPING[api_method_name]['access_control'] == 'admin' and not user_info.is_admin:
                     return HttpResponse(status=401, content="need admin access")
             else:
                 return HttpResponse(status=401, content="api method not found, access dined")
@@ -96,8 +98,8 @@ class AuthMiddleware:
 
         else:
 
-            if request.path in URL_TO_MSG_MAPPING.keys():
-                if URL_TO_MSG_MAPPING[request.path]['access_control'] is not None:
+            if api_method_name in URL_TO_MSG_MAPPING.keys():
+                if URL_TO_MSG_MAPPING[api_method_name]['access_control'] is not None:
                     return HttpResponse(status=401, content="no token")
             else:
                 return HttpResponse(status=401, content="api method not found, access dined")

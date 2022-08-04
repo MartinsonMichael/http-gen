@@ -3,11 +3,11 @@ import json
 from typing import Union, Callable, Optional
 from django.http import HttpResponse, HttpRequest, FileResponse
 
-from kb.api_services.url2map import URL_TO_MSG_MAPPING
+from webapi.methods.api_services.url2map import URL_TO_MSG_MAPPING
+from webapi.middleware.AuthMiddleware import AuthUserInfo
 
 
 class RPCException(Exception):
-
     def __init__(self, error_msg: Optional[str] = None):
         super(RPCException, self).__init__()
         self.error_msg = error_msg
@@ -27,15 +27,14 @@ class MessageCreatorMiddleware:
 
     def __call__(self, request: HttpRequest) -> Union[HttpResponse, FileResponse]:
 
-        print(request.get_raw_uri(), request.path)
-
         if request.method == 'OPTION':
             return HttpResponse(content='use RPC')
 
-        if request.path not in URL_TO_MSG_MAPPING.keys():
+        method_name = request.path.split('/')[-1] if '/' in request.path else request.path
+
+        if method_name not in URL_TO_MSG_MAPPING.keys():
             return HttpResponse(content="invalid api method", status=400)
 
-        method_name = request.path
         api_description = URL_TO_MSG_MAPPING[method_name]
 
         if api_description['input_msg'] is not None:
@@ -47,27 +46,29 @@ class MessageCreatorMiddleware:
             except KeyError:
                 return HttpResponse(
                     content=(
-                        f"invalid message, expect {api_description['input_msg_nams']}, "
-                        f"got: {request.body.decode()}"
+                        f"invalid message, expect {api_description['input_msg_nams']}, got: {request.body.decode()}"
                     ),
                     status=400,
                 )
         else:
             input_msg = None
 
+        user_info = None
+        if hasattr(request, 'user'):
+            user_info = request.user
+
         try:
-            if input_msg is not None:
-                response = self._get_response(input_msg, request.user, request)
-            else:
-                response = self._get_response(request.user, request)
+            request.input_msg = input_msg
+            request.user_info = user_info
+            response = self._get_response(request)
         except RPCException as e:
             return HttpResponse(
-                content=json.dumps({"error_msg": str(e), "row_error": ""}),
+                content=json.dumps({"error_msg": str(e)}),
                 status=400,
             )
         except Exception as e:
             return HttpResponse(
-                content=json.dumps({"error_msg": "unexpected error", "row_error": str(e)}),
+                content=json.dumps({"error_msg": f"unexpected error:\n{str(e)}"}),
                 status=400,
             )
 
@@ -76,27 +77,22 @@ class MessageCreatorMiddleware:
                 return HttpResponse(
                     content=json.dumps({
                         "error_msg": (
-                            f"unexpected msg, expected {api_description['output_msg_name']}, "
-                            f"but got:\n{str(response)}"
-                        ),
-                        "row_error": ""
+                            f"unexpected msg, expected {api_description['output_msg_name']}, but got:\n{str(response)}"
+                        )
                     }),
                     status=500,
                 )
         if api_description['has_output_file']:
             if not isinstance(response, str):
                 return HttpResponse(
-                    content=json.dumps({
-                        "error_msg": (
-                            f"unexpected str:file_path,"
-                            f"but got:\n{str(response)}"
-                        ),
-                        "row_error": ""
-                    }),
+                    content=json.dumps({"error_msg": f"unexpected str:file_path, but got:\n{str(response)}"}),
                     status=500,
                 )
 
         if api_description['has_output_file']:
             return FileResponse(open(response, 'rb'))
 
-        return HttpResponse(content=json.dumps(response.to_json()), status=200)
+        response = HttpResponse(content=json.dumps(response.to_json()), status=200)
+        response.headers['Content-Type'] = "json"
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        return response
