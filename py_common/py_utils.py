@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime
 
 from parser import ParseResult, MessageAttribute, is_base_type, Service
@@ -19,16 +20,19 @@ import json
 
 """
 
+MIDDLEWARE_PATH = os.environ.get('MIDDLEWARE_PATH', 'webapi.middleware')
+
 
 def make_service_head(parse_result: ParseResult) -> str:
     service_head = (
 f"""{HEAD}
 
 from django.http import HttpRequest
+from django.views.decorators.csrf import csrf_exempt
 
 from . import generated_messages as msg
-from middleware.AuthMiddleware import AuthUserInfo
-from middleware.MessageMiddleware import RPCException
+from {MIDDLEWARE_PATH}.AuthMiddleware import AuthUserInfo
+from {MIDDLEWARE_PATH}.MessageMiddleware import RPCException
 
 
 """

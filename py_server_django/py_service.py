@@ -27,14 +27,16 @@ def generate_services(parse_result: ParseResult, service_path: str, pytry: bool)
                 #     params.append('session: Any')
                 params.append("user_info: AuthUserInfo")
 
-                # file.write(
-                #     f"{TAB}@csrf_exempt\n"
-                #     f"{TAB}def service_{method.name}({','.join(params)}) -> HttpResponse:\n"
-                #     f"{TAB}{TAB}if request.method == 'OPTIONS':\n"
-                #     f"{TAB}{TAB}{TAB}return HttpResponse()\n"
-                #     f"{TAB}{TAB}return self.{method.name}(*args, **kwargs)\n"
-                #     f"\n"
-                # )
+                file.write(
+                    f"{TAB}@csrf_exempt\n"
+                    f"{TAB}def call__{method.name}(self, request) -> {_make_output_type(method.output_type, file_output='OutputFile' in method.changers, use_msg=True)}:\n"
+                    f"{TAB}{TAB}return self.{method.name}("
+                )
+                if method.input_type != "Null":
+                    file.write('request.input_msg, ')
+                file.write(
+                    f"request, request.user_info)\n\n"
+                )
 
                 # # changers
                 # is_ses_auth = 'Session-auth' in method.changers
